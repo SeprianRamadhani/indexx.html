@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>The Absurd Campus Survival</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:      #0a0914;
+    --bg2:     #0e0d1a;
+    --panel:   #131222;
+    --card:    #1a1930;
+    --surface: #18172a;
+    --accent:  #1e1c35;
+    --red:     #ff3d6b;
+    --red-dk:  #c41e45;
+    --green:   #00e5a0;
+    --yellow:  #ffb930;
+    --orange:  #ff6b35;
+    --pink:    #ff6fd8;
+    --cyan:    #00d4ff;
+    --purple:  #9d7fff;
+    --white:   #f5f2ff;
+    --gray:    #4a4870;
+    --light:   #b8b4d8;
+    --dim:     #2a2848;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: 'Share Tech Mono', 'Courier New', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── GRID BG ─── */
+  .grid-bg {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background-image:
+      linear-gradient(rgba(30,28,53,.55) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(30,28,53,.55) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+  .grid-bg::before {
+    content:''; position:absolute; inset:0;
+    background:
+      radial-gradient(ellipse 560px 400px at 15% 20%, #3d0d1a55, transparent),
+      radial-gradient(ellipse 600px 500px at 85% 70%, #1a153544, transparent),
+      radial-gradient(ellipse 400px 300px at 50% 90%, #001a2233, transparent),
+      radial-gradient(ellipse 360px 280px at 70% 10%, #2a102533, transparent);
+  }
+
+  /* ─── SCREENS ─── */
+  .screen { position: relative; z-index: 1; min-height: 100vh; display:none; flex-direction:column; }
+  .screen.active { display: flex; }
+
+  /* ─── TOP ACCENT BAR ─── */
+  .top-bar { height: 4px; background: var(--cyan); flex-shrink:0; }
+  .top-bar.red  { background: var(--red); }
+  .top-bar.green{ background: var(--green);}
+
+  /* ─── HEADER ─── */
+  .hdr {
+    background: var(--accent); padding: 12px 16px;
+    display:flex; align-items:center; justify-content:space-between;
+    flex-shrink:0; gap:8px; flex-wrap:wrap;
+  }
+  .hdr-left { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .hdr-title { font-family:'Rajdhani',sans-serif; font-size:13px; font-weight:700; color:var(--white); letter-spacing:.5px; }
+  .hdr-user { font-size:10px; color:var(--cyan); font-weight:700; }
+
+  /* ─── PROGRESS DOTS ─── */
+  .dots { display:flex; align-items:center; gap:4px; font-size:12px; }
+  .dot-done  { color:var(--green); }
+  .dot-cur   { color:var(--red); }
+  .dot-todo  { color:var(--gray); }
+  .dot-count { font-size:10px; color:var(--light); margin-left:4px; }
+
+  /* ─── STRESS BAR ─── */
+  .stress-wrap {
+    background: var(--accent); padding:8px 16px;
+    display:flex; align-items:center; gap:10px; flex-shrink:0; flex-wrap:wrap;
+  }
+  .stress-label { font-size:9px; color:var(--gray); white-space:nowrap; }
+  .stress-track { flex:1; min-width:80px; height:8px; background:#2a2845; border-radius:4px; overflow:hidden; position:relative; }
+  .stress-fill  { height:100%; border-radius:4px; transition:width .4s ease; background:var(--green); }
+  .stress-val   { font-size:11px; font-weight:700; white-space:nowrap; }
+  .stress-state { font-size:10px; font-weight:700; white-space:nowrap; }
+
+  /* ─── SCENARIO TITLE ROW ─── */
+  .scen-title-row {
+    background:var(--bg2); padding:10px 16px;
+    display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;
+    border-bottom:1px solid var(--dim); flex-shrink:0;
+  }
+  .scen-title { font-family:'Rajdhani',sans-serif; font-size:15px; font-weight:700; color:var(--yellow); }
+  .scen-loc   { font-size:9px; color:var(--gray); }
+
+  /* ─── STORY AREA ─── */
+  .story-wrap { flex:1; padding:16px; overflow-y:auto; }
+  .story-box  { background:var(--surface); border-radius:8px; padding:18px 16px; }
+  .story-text { font-size:12.5px; line-height:1.75; color:var(--white); white-space:pre-wrap; min-height:80px; }
+  .skip-hint  { text-align:right; font-size:9px; color:var(--gray); margin-top:6px; cursor:pointer; }
+  .skip-hint:active { color:var(--white); }
+
+  /* ─── QUESTION ─── */
+  .q-label { font-size:12px; font-weight:700; color:var(--white); padding:12px 16px 8px; flex-shrink:0; }
+
+  /* ─── CHOICE BUTTONS ─── */
+  .choices-wrap { padding:0 12px 16px; display:flex; flex-direction:column; gap:8px; flex-shrink:0; }
+  .choice-btn {
+    width:100%; border:none; cursor:pointer; border-radius:6px; overflow:hidden;
+    display:flex; flex-direction:column; background:var(--surface);
+    transition: transform .12s, box-shadow .12s;
+    text-align:left;
+  }
+  .choice-btn:active { transform:scale(.98); }
+  .choice-badge {
+    padding:4px 12px; font-size:9px; font-weight:700;
+    color:var(--bg); letter-spacing:.5px;
+  }
+  .choice-badge.A { background:var(--green); }
+  .choice-badge.B { background:var(--yellow); }
+  .choice-badge.C { background:var(--red); }
+  .choice-text { padding:10px 12px; font-family:'Share Tech Mono',monospace; font-size:11.5px; color:var(--white); line-height:1.5; }
+
+  /* ─── NAV AREA ─── */
+  .nav-wrap { padding:12px 16px 20px; flex-shrink:0; }
+  .nav-btn {
+    width:100%; padding:14px; border:none; border-radius:8px; cursor:pointer;
+    font-family:'Share Tech Mono',monospace; font-size:13px; font-weight:700;
+    transition: opacity .15s, transform .1s; letter-spacing:.5px;
+  }
+  .nav-btn:active { opacity:.85; transform:scale(.98); }
+  .nav-btn.green  { background:var(--green); color:var(--bg); }
+  .nav-btn.red    { background:var(--red);   color:var(--white); }
+  .nav-btn.gray   { background:var(--accent); color:var(--light); }
+
+  /* ─── LOGIN SCREEN ─── */
+  .login-body {
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:24px 20px;
+  }
+  .login-icon  { font-size:64px; line-height:1; margin-bottom:8px; }
+  .login-title { font-family:'Rajdhani',sans-serif; font-size:20px; font-weight:700; color:var(--white); text-align:center; }
+  .login-sub   { font-size:10px; color:var(--gray); text-align:center; margin-bottom:20px; }
+
+  .login-card {
+    background:var(--surface); border-radius:10px; padding:28px 24px; width:100%; max-width:420px;
+  }
+  .card-top-line { height:3px; background:var(--cyan); border-radius:2px; margin-bottom:18px; }
+  .card-heading  { font-family:'Rajdhani',sans-serif; font-size:15px; font-weight:700; color:var(--white); text-align:center; }
+  .card-sub      { font-size:9px; color:var(--gray); text-align:center; margin:4px 0 18px; line-height:1.5; }
+
+  .field-label { font-size:10px; color:var(--light); margin-bottom:6px; font-weight:700; }
+  .field-wrap  { border:2px solid var(--cyan); border-radius:6px; padding:2px; margin-bottom:6px; }
+  .field-wrap input {
+    width:100%; background:var(--card); border:none; outline:none; padding:12px 14px;
+    font-family:'Share Tech Mono',monospace; font-size:14px; font-weight:700;
+    color:var(--white); caret-color:var(--cyan); border-radius:4px;
+  }
+  .field-err { font-size:9px; color:var(--red); min-height:14px; margin-bottom:8px; }
+  .field-hint{ font-size:8px; color:var(--gray); text-align:center; margin-bottom:18px; }
+
+  .start-btn {
+    width:100%; padding:14px; background:var(--cyan); color:var(--bg);
+    border:none; border-radius:8px; cursor:pointer;
+    font-family:'Share Tech Mono',monospace; font-size:13px; font-weight:700; letter-spacing:.5px;
+    transition: opacity .15s;
+  }
+  .start-btn:active { opacity:.8; }
+  .card-divider { height:1px; background:var(--dim); margin:18px 0 10px; }
+  .card-footer  { font-size:8px; color:var(--gray); text-align:center; }
+
+  /* ─── TITLE SCREEN ─── */
+  .title-body { flex:1; display:flex; flex-direction:column; align-items:center; padding:24px 16px 20px; overflow-y:auto; }
+  .title-icon { font-size:64px; line-height:1; }
+  .title-h1   { font-family:'Rajdhani',sans-serif; font-size:32px; font-weight:700; color:var(--white); text-align:center; line-height:1.1; margin:8px 0 0; }
+  .title-h2   { font-family:'Rajdhani',sans-serif; font-size:32px; font-weight:700; color:var(--red); text-align:center; line-height:1.1; }
+  .title-div  { display:flex; align-items:center; gap:10px; margin:10px 0; }
+  .title-div-line { flex:1; height:1px; background:var(--gray); }
+  .title-div-txt  { font-size:10px; color:var(--gray); }
+
+  .welcome-box {
+    background:var(--surface); border-radius:8px; padding:14px 20px; width:100%; max-width:420px; margin:4px 0;
+  }
+  .welcome-top { height:2px; background:var(--cyan); border-radius:1px; margin-bottom:10px; }
+  .welcome-name { font-size:14px; font-weight:700; color:var(--cyan); text-align:center; }
+  .welcome-hint { font-size:10px; color:var(--light); text-align:center; margin-top:4px; }
+  .welcome-bot  { height:2px; background:var(--cyan); border-radius:1px; margin-top:10px; }
+
+  .desc-box {
+    background:var(--surface); border-radius:8px; padding:14px 18px; width:100%; max-width:420px; margin:8px 0;
+  }
+  .desc-txt { font-size:11px; color:var(--light); line-height:1.7; text-align:center; }
+
+  .stat-cards { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:10px 0; width:100%; max-width:420px; }
+  .stat-card  { background:var(--surface); border-radius:8px; padding:12px 16px; flex:1; min-width:80px; text-align:center; }
+  .stat-card-line { height:3px; border-radius:2px; margin-bottom:8px; }
+  .stat-card-icon { font-size:20px; }
+  .stat-card-lbl  { font-size:8px; color:var(--gray); margin:2px 0; }
+  .stat-card-val  { font-size:10px; font-weight:700; }
+
+  .btn-row { display:flex; flex-direction:column; gap:8px; width:100%; max-width:420px; margin:10px 0; }
+  .btn-main { padding:16px; background:var(--red); color:var(--white); border:none; border-radius:8px; cursor:pointer; font-family:'Share Tech Mono',monospace; font-size:14px; font-weight:700; letter-spacing:.5px; transition:opacity .15s; }
+  .btn-main:active { opacity:.8; }
+  .btn-sec  { padding:12px; background:var(--accent); color:var(--light); border:none; border-radius:8px; cursor:pointer; font-family:'Share Tech Mono',monospace; font-size:11px; font-weight:700; transition:opacity .15s; }
+  .btn-sec:active { opacity:.8; }
+
+  .credit { font-size:9px; color:var(--gray); text-align:center; margin-top:8px; }
+
+  /* ─── CONSEQUENCE DISPLAY ─── */
+  .consequence-box { background:var(--surface); border-radius:8px; padding:18px 16px; }
+  .consequence-choice { font-size:12px; font-weight:700; color:var(--cyan); margin-bottom:8px; }
+  .consequence-div { height:1px; background:var(--dim); margin:10px 0; }
+  .consequence-text { font-size:12px; color:var(--light); white-space:pre-wrap; line-height:1.75; }
+  .consequence-result { font-size:11px; font-weight:700; margin-top:10px; line-height:1.6; }
+
+  /* ─── GAME OVER SCREEN ─── */
+  .go-body { flex:1; overflow-y:auto; padding:24px 16px 20px; display:flex; flex-direction:column; align-items:center; }
+  .go-icon  { font-size:72px; line-height:1; }
+  .go-title { font-family:'Rajdhani',sans-serif; font-size:34px; font-weight:700; color:var(--red); text-align:center; margin:8px 0 4px; }
+  .go-sub   { font-size:10px; color:var(--gray); text-align:center; margin-bottom:16px; }
+  .go-div   { width:100%; max-width:380px; height:3px; background:var(--red); border-radius:2px; margin:8px 0; }
+
+  .story-panel { background:var(--surface); border-radius:8px; padding:20px; width:100%; max-width:420px; margin:12px 0; }
+  .story-panel p { font-size:11.5px; color:var(--light); line-height:1.8; text-align:center; }
+  .stress-final { font-size:16px; font-weight:700; color:var(--red); text-align:center; margin:12px 0; }
+
+  .log-box { background:var(--surface); border-radius:8px; padding:16px; width:100%; max-width:420px; margin:8px 0; }
+  .log-title { font-size:9px; font-weight:700; color:var(--light); margin-bottom:8px; text-align:center; }
+  .log-row   { display:flex; align-items:center; gap:6px; margin:4px 0; font-size:9px; flex-wrap:wrap; }
+  .log-badge { padding:2px 6px; border-radius:3px; font-weight:700; font-size:8px; }
+  .log-add   { font-weight:700; }
+  .log-name  { color:var(--gray); font-size:8px; }
+
+  .moral-txt { font-size:10px; color:var(--gray); font-style:italic; text-align:center; margin:12px 0; }
+
+  .go-btn-row { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; width:100%; max-width:420px; margin-top:8px; }
+  .go-btn { flex:1; min-width:100px; padding:12px 8px; border:none; border-radius:8px; cursor:pointer; font-family:'Share Tech Mono',monospace; font-size:10px; font-weight:700; transition:opacity .15s; }
+  .go-btn:active { opacity:.8; }
+  .go-btn.b1 { background:var(--surface); color:var(--white); }
+  .go-btn.b2 { background:var(--dim); color:var(--light); }
+  .go-btn.b3 { background:#1e1c35; color:var(--gray); }
+
+  /* ─── ENDING SCREEN ─── */
+  .end-body { flex:1; overflow-y:auto; padding:24px 16px 24px; display:flex; flex-direction:column; align-items:center; }
+  .end-title { font-family:'Rajdhani',sans-serif; font-size:22px; font-weight:700; text-align:center; margin:8px 0 2px; }
+  .end-sub   { font-size:10px; color:var(--gray); text-align:center; margin-bottom:12px; }
+  .end-div   { width:100%; max-width:380px; height:3px; border-radius:2px; margin:8px 0; }
+  .end-txt   { font-size:12px; color:var(--light); line-height:1.8; text-align:center; white-space:pre-wrap; margin:10px 0; }
+  .ach-lbl   { font-size:12px; font-weight:700; text-align:center; margin:8px 0; }
+
+  .report-box { background:var(--surface); border-radius:8px; padding:18px 16px; width:100%; max-width:420px; margin:8px 0; }
+  .report-title { font-size:12px; font-weight:700; color:var(--white); text-align:center; margin-bottom:6px; }
+  .report-stats { font-size:13px; font-weight:700; text-align:center; margin-bottom:10px; }
+  .report-div   { height:1px; background:var(--dim); margin:8px 0; }
+  .report-log-title { font-size:9px; font-weight:700; color:var(--light); margin-bottom:6px; }
+  .sum-row  { display:flex; justify-content:center; gap:12px; flex-wrap:wrap; margin:8px 0; }
+  .sum-item { font-size:10px; font-weight:700; }
+  .eval-title { font-size:9px; font-weight:700; color:var(--light); text-align:center; margin-top:8px; margin-bottom:4px; }
+  .eval-txt   { font-size:10px; color:var(--gray); text-align:center; line-height:1.6; }
+
+  .user-banner { background:var(--surface); border-radius:8px; padding:12px 20px; margin-bottom:10px; text-align:center; width:100%; max-width:420px; }
+  .user-banner-txt { font-size:12px; font-weight:700; color:var(--cyan); }
+
+  /* ─── SCROLLBAR ─── */
+  ::-webkit-scrollbar { width:4px; }
+  ::-webkit-scrollbar-track { background:var(--bg); }
+  ::-webkit-scrollbar-thumb { background:var(--dim); border-radius:2px; }
+
+  /* ─── ANIMATIONS ─── */
+  @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+  .fadein { animation: fadeIn .3s ease both; }
+
+  /* ─── CURSOR BLINK ─── */
+  .cursor::after { content:'▋'; animation: blink 1s step-end infinite; }
+  @keyframes blink { 50% { opacity:0; } }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+
+<!-- ═══════════════════════════════════════
+     SCREEN: LOGIN
+═══════════════════════════════════════ -->
+<div id="screen-login" class="screen active">
+  <div class="top-bar"></div>
+  <div class="login-body fadein">
+    <div class="login-icon">🎓</div>
+    <div class="login-title">THE ABSURD CAMPUS SURVIVAL</div>
+    <div class="login-sub">— Selamat Datang —</div>
+    <div class="login-card">
+      <div class="card-top-line"></div>
+      <div class="card-heading">📋  REGISTRASI PEMAIN</div>
+      <div class="card-sub">Masukkan nama/username untuk memulai sesi permainan.</div>
+      <div class="field-label">👤  Nama Pemain :</div>
+      <div class="field-wrap"><input type="text" id="username-input" placeholder="Ketik nama kamu..." maxlength="24" autocomplete="off" spellcheck="false"></div>
+      <div class="field-err" id="login-err"></div>
+      <div class="field-hint">Contoh : Seprian · Kaela · Syafi'i · atau nama apapun</div>
+      <button class="start-btn" onclick="doLogin()">🚀  MULAI PETUALANGAN</button>
+      <div class="card-divider"></div>
+      <div class="card-footer">Kelompok : Seprian · Syafi'i · Kaela &nbsp;|&nbsp; Sastra Inggris</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SCREEN: TITLE
+═══════════════════════════════════════ -->
+<div id="screen-title" class="screen">
+  <div class="top-bar red"></div>
+  <div class="title-body fadein">
+    <div class="title-icon">🎓</div>
+    <div class="title-h1">THE  ABSURD</div>
+    <div class="title-h2">CAMPUS  SURVIVAL</div>
+    <div class="title-div"><div class="title-div-line"></div><div class="title-div-txt">Interactive Fiction Game</div><div class="title-div-line"></div></div>
+    <div class="welcome-box">
+      <div class="welcome-top"></div>
+      <div class="welcome-name" id="welcome-name">Selamat datang, 👤 Pemain !</div>
+      <div class="welcome-hint">Siapkan mental kamu — 10 skenario absurd menanti.</div>
+      <div class="welcome-bot"></div>
+    </div>
+    <div class="desc-box">
+      <div class="desc-txt">Kamu adalah mahasiswa baru di jurusan Sastra Inggris.<br>Hadapi 10 skenario kampus yang berbeda setiap sesi!<br>Setiap pilihan mempengaruhi Tingkat Stres.<br>Jaga agar tetap di bawah 200 — atau GAME OVER!</div>
+    </div>
+    <div class="stat-cards">
+      <div class="stat-card"><div class="stat-card-line" style="background:var(--green)"></div><div class="stat-card-icon">📅</div><div class="stat-card-lbl">Skenario</div><div class="stat-card-val" style="color:var(--green)">10 Soal</div></div>
+      <div class="stat-card"><div class="stat-card-line" style="background:var(--cyan)"></div><div class="stat-card-icon">🎲</div><div class="stat-card-lbl">Urutan</div><div class="stat-card-val" style="color:var(--cyan)">Acak!</div></div>
+      <div class="stat-card"><div class="stat-card-line" style="background:var(--red)"></div><div class="stat-card-icon">☠️</div><div class="stat-card-lbl">Game Over</div><div class="stat-card-val" style="color:var(--red)">200 Stress</div></div>
+      <div class="stat-card"><div class="stat-card-line" style="background:var(--green)"></div><div class="stat-card-icon">🏆</div><div class="stat-card-lbl">Tujuan</div><div class="stat-card-val" style="color:var(--green)">Survive!</div></div>
+    </div>
+    <div class="credit">Kelompok : Seprian · Syafi'i · Kaela &nbsp;|&nbsp; Jurusan Sastra Inggris</div>
+    <div class="btn-row">
+      <button class="btn-main" onclick="startGame()">▶  MULAI PERMAINAN</button>
+      <button class="btn-sec"  onclick="showLogin()">🔁  Ganti Pemain</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SCREEN: SCENARIO
+═══════════════════════════════════════ -->
+<div id="screen-scenario" class="screen" style="flex-direction:column;">
+  <div class="top-bar red"></div>
+  <div class="hdr">
+    <div class="hdr-left">
+      <span class="hdr-title">🎓 ABSURD CAMPUS</span>
+      <span class="hdr-user" id="hdr-user"></span>
+    </div>
+    <div class="dots" id="progress-dots"></div>
+  </div>
+  <div class="stress-wrap">
+    <span class="stress-label">⚡ STRESS</span>
+    <div class="stress-track"><div class="stress-fill" id="stress-fill" style="width:0%"></div></div>
+    <span class="stress-val" id="stress-val">0/200</span>
+    <span class="stress-state" id="stress-state">😊 AMAN</span>
+  </div>
+
+  <div class="scen-title-row">
+    <span class="scen-title" id="scen-title"></span>
+    <span class="scen-loc" id="scen-loc"></span>
+  </div>
+
+  <div class="story-wrap" id="story-wrap">
+    <div id="story-box" class="story-box">
+      <div class="story-text" id="story-text"></div>
+    </div>
+    <div class="skip-hint" id="skip-hint" onclick="skipAnim()">⏭ Lewati animasi [ketuk di sini]</div>
+  </div>
+
+  <div id="bottom-area"></div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SCREEN: GAME OVER
+═══════════════════════════════════════ -->
+<div id="screen-gameover" class="screen">
+  <div class="top-bar red"></div>
+  <div class="go-body fadein">
+    <div class="go-icon">💀</div>
+    <div class="go-title">G A M E &nbsp; O V E R</div>
+    <div class="go-sub" id="go-sub"></div>
+    <div class="go-div"></div>
+    <div class="story-panel">
+      <p>Tingkat stresmu menghancurkan semua batas kemanusiaan.<br><br>
+      Kamu ditemukan di kantin kampus pada suatu pagi,<br>
+      menatap kosong semangkuk mie yang sudah dingin, berbisik:<br><br>
+      <em>"To be or not to be... that is the question..."</em><br><br>
+      Universitas memintamu mengambil cuti semester.<br>
+      Orang tuamu mendapat telepon dari bagian kemahasiswaan.<br>
+      Pembimbing akademikmu menyarankan "refleksi diri mendalam."</p>
+    </div>
+    <div class="stress-final" id="go-stress"></div>
+    <div class="log-box" id="go-log">
+      <div class="log-title">Jejak Keputusan :</div>
+      <div id="go-log-rows"></div>
+    </div>
+    <div class="moral-txt">MORAL : Setiap keputusan buruk ada harganya.</div>
+    <div class="go-btn-row">
+      <button class="go-btn b1" onclick="showTitle()">🔄 Main Lagi</button>
+      <button class="go-btn b2" onclick="showLogin()">🔁 Ganti Pemain</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SCREEN: ENDING
+═══════════════════════════════════════ -->
+<div id="screen-ending" class="screen">
+  <div class="top-bar green" id="end-topbar"></div>
+  <div class="end-body fadein">
+    <div class="user-banner"><div class="user-banner-txt" id="end-username"></div></div>
+    <div class="end-title" id="end-title"></div>
+    <div class="end-sub"   id="end-sub"></div>
+    <div class="end-div"   id="end-div"></div>
+    <div class="end-txt"   id="end-txt"></div>
+    <div class="ach-lbl"   id="end-ach"></div>
+    <div class="report-box">
+      <div class="report-title">📋 LAPORAN AKHIR</div>
+      <div class="report-stats" id="end-stats"></div>
+      <div class="report-div"></div>
+      <div class="report-log-title">Jejak Keputusanmu :</div>
+      <div id="end-log-rows"></div>
+      <div class="report-div"></div>
+      <div class="sum-row" id="end-sum"></div>
+      <div class="report-div"></div>
+      <div class="eval-title">EVALUASI :</div>
+      <div class="eval-txt" id="end-eval"></div>
+    </div>
+    <div class="credit" style="margin:12px 0 8px;">Dibuat oleh : Seprian · Syafi'i · Kaela &nbsp;|&nbsp; Jurusan Sastra Inggris</div>
+    <div class="btn-row" style="max-width:420px;">
+      <button class="btn-main" style="background:var(--accent);color:var(--light);" onclick="showTitle()">🔄 Main Lagi (Soal Baru!)</button>
+      <button class="btn-sec" onclick="showLogin()">🔁 Ganti Pemain</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════════════════
+const ALL_SCENARIOS = [
+  {
+    title:"Phonology Class  —  Monday, 7:30 AM",
+    loc:"Ruang 3A  ·  Mata Kuliah Fonologi",
+    icon:"📚",
+    story:"Kamu tiba di kelas Phonology tepat waktu,\nmata masih 70% tertutup setelah binge-watching series\nsampai jam 3 pagi tadi malam.\n\nMr. Arif masuk dengan senyum yang mencurigakan.\n\n  Mr. Arif : \"Good morning, everyone!\"\n\n             \"SURPRISE QUIZ — 20 soal IPA.\n              International Phonetic Alphabet.\"\n\nSeluruh kelas langsung heboh: 'WHAAAAT?!'\n— termasuk kamu, yang belum pernah sekali pun buka textbook.",
+    q:"❓  Apa yang akan kamu lakukan?",
+    choices:{
+      SAFE:{
+        lbl:"Tarik napas dalam dan coba ingat kembali slide IPA dari kuliah pertama.",
+        cons:"Kamu menghirup napas perlahan.  '/æ/... /ɪ/... /ʃ/...'\n\nBeberapa simbol masih mengambang di ingatanmu.\nTidak sempurna — tapi kamu mengerjakannya dengan jujur.\n\nMr. Arif : \"Hasil akan diposting besok.\"\n\nSetidaknya nuranimu bersih.",
+        result:"Quiz selesai — dengan usahamu sendiri! ✅",
+        stress:10,mood:"😊  +10 Stress  (deg-degan, tapi oke)"
+      },
+      RISKY:{
+        lbl:"Perlahan geser kertasmu agar bisa mengintip jawaban tetangga.",
+        cons:"Kamu mulai hati-hati menggeser kertas ke pinggir...\n\nTapi tepat saat itu Mr. Arif berjalan melewati mejamu.\n\nMr. Arif : \"Sepertinya kita perlu bicara setelah kelas.\"\n\nDua puluh menit ceramah Integritas Akademik face-to-face menyusul.\nKontak mata langsung. Tidak berkedip sekalipun.",
+        result:"Ketahuan menyontek! Nilai: 0 + peringatan resmi. ❌",
+        stress:35,mood:"😱  +35 Stress  (MALU DAN TERTEKAN!)"
+      },
+      CHAOS:{
+        lbl:"Isi semua 20 jawaban secara acak dan berdoa untuk keajaiban.",
+        cons:"Kamu menulis dengan percaya diri yang mengejutkan.\n\"/a/ = apple,   /b/ = bee,   /c/ = cat...\"\n\nMr. Arif mengembalikan kertasmu dengan satu catatan merah:\n\"Ini universitas, bukan TK.\"\n\nNilai: 15 / 100.",
+        result:"Nilai: 15/100 — bencana buatan sendiri. ❌",
+        stress:50,mood:"😵  +50 Stress  (TOTAL DISASTER!)"
+      }
+    }
+  },
+  {
+    title:"Library Essay Crisis  —  Tuesday, 10:00 AM",
+    loc:"Perpustakaan Universitas  ·  Lantai 2, Sudut Tenang",
+    icon:"✍️",
+    story:"Kamu duduk dengan laptop, tiga buku Shakespeare,\ndan kopi yang sudah dingin sejak dua jam lalu.\n\n\"Symbolism in Hamlet\" — esai 5 halaman yang harus dikumpul BESOK.\n\nYang sudah kamu tulis sejauh ini:\n\n  ┌─────────────────────────────────────────┐\n  │  Nama   :  [namamu]                     │\n  │  NIM    :  [NIM-mu]                     │\n  │  Kelas  :  Sastra Inggris — A           │\n  │                                         │\n  │  (halaman ini sengaja dikosongkan)      │\n  └─────────────────────────────────────────┘\n\nTemanmu Dito duduk di sebelahmu.\n  Dito : \"Aku udah selesai dari sejam lalu. 5 halaman. Mau lihat?\"",
+    q:"❓  Apa yang akan kamu lakukan?",
+    choices:{
+      SAFE:{
+        lbl:"Tolak tawaran Dito dengan sopan dan tulis esaimu sendiri dari buku.",
+        cons:"\"To be or not to be, that is the question.\"\n— Act III, Scene I\n\nKamu terjun dan menemukan banyak bahan:\nsimbolisme mahkota, hantu ayah, citra kematian...\n\nLima jam kemudian — lima halaman yang solid.\nMatamu perih dan punggungmu sakit,\ntapi esai itu sepenuhnya milikmu.",
+        result:"Esai selesai — penuh integritas! ✅",
+        stress:15,mood:"😤  +15 Stress  (lelah, tapi bangga!)"
+      },
+      RISKY:{
+        lbl:"Pergi ke ruangan dosen, pura-pura sakit, dan minta perpanjangan 2 hari.",
+        cons:"Kamu mengetuk pintu dengan wajah sakit terbaikmu.\n\"Bu, saya sudah tidak enak badan sejak kemarin...\"\n\nDia memandangmu melewati kacamatanya. Lima detik hening.\n\nDr. Wulan : \"Baiklah. Dua hari lagi.\"\n             \"Tapi nilai maksimalmu akan dibatasi 75.\"\n\nKamu keluar dengan lega — tapi rasa bersalah perlahan\nmulai menggantikan rasa lega itu.",
+        result:"Perpanjangan diberikan — nilai maksimal 75. 😐",
+        stress:25,mood:"😅  +25 Stress  (lega + bersalah = tetap stres)"
+      },
+      CHAOS:{
+        lbl:"Salin file Dito, ganti beberapa kalimat, dan kumpulkan sebagai karyamu.",
+        cons:"Kamu ambil filenya. Font diganti, nama ditukar,\nbeberapa kalimat 'diparafrase'. Dikumpul. Lega sebentar.\n\nPagi berikutnya, email masuk:\n\n  Dr. Wulan : \"Tolong datang ke kantor saya jam 10:00.\"\n               \"Esaimu dan punya Dito memiliki tingkat\n                kemiripan 94%. Kami pakai Turnitin.\"\n\nKamu membaca email itu tiga kali. Lalu menutup laptop.",
+        result:"PLAGIARISME TERDETEKSI! Nilai: 0 + sidang akademik. ❌",
+        stress:55,mood:"🚨  +55 Stress  (KETAHUAN! PANIK TOTAL!)"
+      }
+    }
+  },
+  {
+    title:"Oral Presentation Day  —  Wednesday, 9:00 AM",
+    loc:"Ruang Seminar B-204  ·  Hari Presentasi Lisan",
+    icon:"🎤",
+    story:"Inilah saatnya. Momen yang ditakuti setiap mahasiswa baru.\n\nPRESENTASI LISAN.\n  Topik    :  \"The Role of Metaphor in Contemporary Poetry\"\n  Bahasa   :  Inggris\n  Durasi   :  10 menit  |  Tidak boleh membawa catatan\n\nKamu berdiri di depan pintu Ruang B-204.\nNamamu baru saja dipanggil.\nJantungmu memutuskan untuk berdetak tiga kali lebih cepat dari biasanya.",
+    q:"❓  Apa yang akan kamu lakukan?",
+    choices:{
+      SAFE:{
+        lbl:"Masuk, berdiri tegak, dan presentasikan semua yang sudah kamu siapkan.",
+        cons:"Kamu masuk. Tarik napas. Satu langkah. Dua.\n\n\"Good morning, everyone.\"\n\nAnehnya, begitu suaramu keluar — ketakutan itu menghilang.\n\n\"Metaphor, as Lakoff and Johnson suggest, is not merely\n a literary device — it is how we think and speak.\"\n\nDosen mengangguk perlahan. Kamu selesai tepat di 10 menit.\n\nLalu kamu mendengar kata-kata terindah minggu ini:\n  Dosen : \"Well done.\"",
+        result:"Presentasi SUKSES! 'Well done.' dari dosen! 🎉",
+        stress:5,mood:"😌  +5 Stress  (LEGA BANGET!)"
+      },
+      RISKY:{
+        lbl:"Minta teman di belakang untuk berbisik poin penting jika kamu blank.",
+        cons:"Di tengah presentasi, pikiranmu benar-benar kosong.\nMatamu mulai melirik ke temanmu di belakang...\n\nDosen langsung menyadarinya:\n\"Tolong lihat ke depan dan presentasikan secara mandiri.\"\n\nKamu menyelesaikan sisa presentasi\ndengan suara yang mengecil dan wajah yang makin\nmemerah dengan menyakitkan.",
+        result:"Presentasi selesai — tapi kacau. Nilai: C+",
+        stress:30,mood:"😓  +30 Stress  (menyesal bergantung pada orang lain)"
+      },
+      CHAOS:{
+        lbl:"Pura-pura pingsan di depan pintu kelas dan berharap presentasi ditunda.",
+        cons:"Kamu berdiri di depan pintu...\n...lalu secara dramatis jatuh ke lantai.\n\"Aduh... kepala saya...\"\n\nTeman-teman panik. Seseorang berlari mencari air.\nDosen keluar, jongkok, dan berbicara dengan sangat pelan:\n\n\"Tidak apa-apa. Silakan istirahat dulu.\"\n\"Presentasi susulan : BESOK. Jam 7:00 pagi.\"\n\"Ruang khusus. SENDIRIAN.\"\n\nKamu menatap langit-langit koridor.\nKarma itu nyata. Dan dia selalu tepat waktu.",
+        result:"Ditunda — tapi sendirian, jam 7 pagi, besok. 😱",
+        stress:45,mood:"💀  +45 Stress  (KARMA SELALU TEPAT WAKTU)"
+      }
+    }
+  },
+  {
+    title:"Group Project Betrayal  —  Thursday, 2:00 PM",
+    loc:"Kantin Kampus  ·  Meja Pojok",
+    icon:"🤝",
+    story:"Deadline presentasi kelompok tinggal DUA JAM LAGI.\n\nKamu membuka WhatsApp dan menemukan bom:\n\n  ┌─────────────────────────────────────────┐\n  │  Reza   : 'Guys maaf, aku sakit. Gak    │\n  │            bisa datang. Bagianku belum  │\n  │            selesai btw. Semangat! 🙏'   │\n  └─────────────────────────────────────────┘\n\nReza memegang 40% materi presentasi.\nKamu dan dua teman lain saling menatap.\nDosen paling disiplin di kampus menunggu.\nDan tidak ada yang namanya 'sakit mendadak' di kamusnya.",
+    q:"❓  Apa yang akan kamu lakukan?",
+    choices:{
+      SAFE:{
+        lbl:"Bagi ulang bagian Reza ke anggota lain dan kerjakan bersama sekarang.",
+        cons:"Dalam 1,5 jam kalian membagi tugas ulang dengan cepat.\nKamu menulis outline, Sari menyiapkan slide, Budi latihan bicara.\n\nPresentasi berjalan sedikit terburu-buru tapi solid.\n\nDosen : \"Koordinasi yang baik dalam situasi sulit.\"\n         \"Nilai kelompok : B+\"\n\nReza mendapat nilai terpisah: D.",
+        result:"Kelompok selamat dengan B+! Reza? D. ✅",
+        stress:20,mood:"😤  +20 Stress  (kerja keras mendadak!)"
+      },
+      RISKY:{
+        lbl:"Hubungi dosen via email dan minta penundaan 30 menit dengan alasan teknis.",
+        cons:"Kamu mengirim email: 'Terjadi kendala teknis pada file presentasi...'\n\nDosen membalas dalam 3 menit:\n\"Baik. 30 menit saya tunggu. File final dikirim ke email saya.\"\n\nKalian berlari ke perpustakaan, mengetik seperti orang kerasukan.\n30 menit selesai. File dikirim. Presentasi berjalan.\n\nNilai: B-. Tapi bohongnya tetap menggantung di hatimu.",
+        result:"Dapat perpanjangan, nilai B-. Tapi... berbohong. 😐",
+        stress:28,mood:"😅  +28 Stress  (deg-degan + rasa bersalah)"
+      },
+      CHAOS:{
+        lbl:"Konfrontasi Reza secara live di grup WA dan salahkan dia di depan semua.",
+        cons:"Tanganmu bergetar. Lalu jarimu mengetik:\n'REZA KAMU NGGAK PROFESIONAL BANGET!! BEGINI CARANYA?!'\n\nGrup meledak. Screenshot menyebar ke grup angkatan.\nReza ternyata memang benar-benar sakit — ada foto rumah sakit.\n\nKamu jadi bahan gosip seminggu penuh.\nPresentasi tetap berantakan.\nDan sekarang semua orang tidak mau satu kelompok denganmu.",
+        result:"Drama WA meledak. Reputasimu hancur. ❌",
+        stress:55,mood:"🔥  +55 Stress  (DRAMA KAMPUS LEVEL DEWA!)"
+      }
+    }
+  },
+  {
+    title:"The Canteen Debt Crisis  —  Friday, 12:15 PM",
+    loc:"Kantin Pak Heru  ·  Antrian Panjang",
+    icon:"🍜",
+    story:"Hari Jumat. Perutmu berbunyi sejak jam 10.\nKamu sudah mengantri 15 menit di kantin Pak Heru.\n\nSampai di kasir — kamu baru sadar:\n\n  💸  Saldo dompet  :  Rp 2.000\n  🍜  Harga makan   :  Rp 18.000\n  📱  Saldo GoPay   :  Rp 0 (lupa isi)\n\nAntrian di belakangmu sudah panjang.\nSemua orang memandangmu.\nPak Heru menatap dengan ekspresi yang tidak bisa dibaca.\n\n  Pak Heru : \"Gimana, Dek?\"",
+    q:"❓  Apa yang akan kamu lakukan?",
+    choices:{
+      SAFE:{
+        lbl:"Minta maaf dengan sopan, kembalikan makanan, dan pergi ke ATM dulu.",
+        cons:"\"Maaf Pak, saya lupa bawa cukup. Boleh saya kembalikan dulu?\"\n\nPak Heru mengangguk. Kamu meletakkan nasi kembali dengan malu.\nJalan ke ATM 10 menit. Kembali. Antri lagi.\n\nLapar 45 menit lebih lama dari rencana.\nTapi setidaknya kamu jujur dan tidak merepotkan siapapun.",
+        result:"Jujur dan balik ke ATM. Lapar tapi integritas! ✅",
+        stress:12,mood:"😓  +12 Stress  (lapar + malu, tapi oke)"
+      },
+      RISKY:{
+        lbl:"Telepon orang tua dan minta transfer darurat via m-banking.",
+        cons:"Kamu menelepon Mama.\n\"Ma, ini darurat... iya makan siang... iya lupa isi GoPay...\"\n\nSuara di ujung telepon menghela napas panjang.\nTransfer masuk 5 menit kemudian.\n\nBersama pesan singkat:\n\"Nanti kita bicara soal pengelolaan uang kamu.\"\n\nEmpat kata paling mengerikan dalam bahasa Indonesia.",
+        result:"Makan siang selamat — tapi 'nanti kita bicara'. 😐",
+        stress:20,mood:"😬  +20 Stress  (makan tapi was-was pulang rumah)"
+      },
+      CHAOS:{
+        lbl:"Pinjam paksa ke orang yang paling tidak kamu kenal di belakangmu.",
+        cons:"Kamu berbalik ke orang asing di belakangmu.\n\"Hei, boleh pinjam 16 ribu? Saya bayar balik nanti.\"\n\nOrang itu ternyata... Wakil Dekan Fakultas.\n\nBeliau tersenyum tipis, mengeluarkan dompetnya,\ndan membayarkan makananmu.\n\n\"Besok ke ruangan saya. Kita bicara soal manajemen keuangan\n mahasiswa. Ini bagian dari pembinaan.\"\n\nKamu menelan makanan itu dalam diam total.",
+        result:"Dipinjami Wakil Dekan. Besok 'pembinaan'. 😱",
+        stress:40,mood:"💀  +40 Stress  (MATI GAYA TINGKAT DEWA)"
+      }
+    }
+  },
+  {
+    title:"The Sleeping in Class Incident  —  Monday, 1:30 PM",
+    loc:"Ruang Kuliah 2B  ·  Mata Kuliah Linguistics",
+    icon:"😴",
+    story:"Senin siang. Perut kenyang. AC ruangan berfungsi sempurna.\nDosen membacakan slide ke-47 tentang morpheme.\n\nKamu tidak ingat kapan matamu mulai berat.\n\nYang kamu tahu:\n  → Kamu terbangun karena suara keras.\n  → Kepala terangkat dari meja.\n  → Ada bekas ballpoint di pipimu.\n  → 28 pasang mata menatapmu.\n  → Dosen berdiri tepat di depan mejamu.\n\n  Dosen : '. . . . . .'\n  (beliau tidak berkata apa-apa. Hanya menatap.)",
+    q:"❓  Apa yang akan kamu lakukan?",
+    choices:{
+      SAFE:{
+        lbl:"Minta maaf dengan tulus, duduk tegak, dan ikuti kuliah sampai selesai.",
+        cons:"\"Maaf, Pak. Saya tidak bermaksud tidak menghormati.\"\n\nKamu duduk tegak. Membuka buku. Mulai mencatat.\n\nDosen memandangmu 3 detik lagi, lalu melanjutkan materi.\n\nDi akhir kuliah:\n  Dosen : \"Yang tadi tertidur — tugas tambahan:\n           ringkasan 2 halaman slide hari ini.\"\n\nFair enough.",
+        result:"Minta maaf, dapat tugas tambahan. Bisa diterima! ✅",
+        stress:15,mood:"😳  +15 Stress  (malu, tapi tanggung jawab)"
+      },
+      RISKY:{
+        lbl:"Berpura-pura itu bukan tidur tapi 'meditasi untuk fokus lebih dalam'.",
+        cons:"\"Bukan tidur Pak — saya sedang melakukan deep focus\n meditation untuk memproses materi lebih baik.\"\n\nKelas terdiam.\n\nDosen mengedipkan mata satu kali.\n\n\"Menarik. Silakan presentasikan apa yang baru kamu\n 'proses' tentang morpheme — sekarang, di depan.\"\n\nKamu berdiri dengan gemetar total.",
+        result:"Disuruh presentasi mendadak tentang materi yang terlewat. ❌",
+        stress:38,mood:"😰  +38 Stress  (kebohongan berujung mimpi buruk)"
+      },
+      CHAOS:{
+        lbl:"Pura-pura sedang sakit kepala parah dan minta izin keluar.",
+        cons:"\"Pak, maaf — kepala saya tiba-tiba sangat sakit...\"\n\nDosen memanggil ketua kelas.\n\"Tolong antar temanmu ke klinik kampus.\"\n\nKamu diantar ke klinik. Diperiksa dokter.\n\"Tidak ada gejala sakit kepala. Tekanan darah normal.\n Ini surat keterangan: SEHAT.\"\n\nSurat itu harus diserahkan ke dosen.\nDosen membacanya. Lalu tersenyum sangat pelan.",
+        result:"Dokter bilang SEHAT. Surat diserahkan ke dosen. ❌",
+        stress:48,mood:"😱  +48 Stress  (kebohongan terbukti medis!)"
+      }
+    }
+  },
+  {
+    title:"The Midnight Assignment Panic  —  Wednesday, 11:47 PM",
+    loc:"Kamar Kos  ·  Deadline Tengah Malam",
+    icon:"🌙",
+    story:"WAKTU    :  23:47 WIB\nDEADLINE :  00:00 WIB  (13 menit lagi)\n\nKamu baru ingat ada tugas Literature Review yang harus\ndikirim MALAM INI lewat portal akademik.\n\nMinimal 8 halaman. Referensi 10 sumber ilmiah.\n\nYang sudah kamu kerjakan:\n  Halaman 1/8  ── Judul dan nama saja.\n\nKoneksi internet kamu: ▂▂▁▁▁ (hampir tidak ada)\nLaptop: 7% baterai, charger di kamar tetangga\n\nNotifikasi masuk dari teman sekelas:\n  Sari : \"Udah kirim tugasnya. Mantap banget! 😊\"",
+    q:"❓  Apa yang akan kamu lakukan?",
+    choices:{
+      SAFE:{
+        lbl:"Email dosen sekarang, minta kebijaksanaan, dan lanjut kerjakan semalam.",
+        cons:"Kamu mengirim email jujur:\n\"Pak/Bu, saya minta maaf — saya salah membaca deadline.\n Bolehkah saya mengirimkan besok pagi dengan pengurangan nilai?\"\n\nLalu kamu meminjam charger, tethering dari HP tetangga,\ndan bekerja sampai jam 4 pagi.\n\nDosen membalas pagi: 'Baik. Maksimal nilai 70.'\n\nKamu menyelesaikan 8 halaman. Nilai 68. Tapi karya sendiri.",
+        result:"Jujur ke dosen, kerja sampai subuh. Nilai 68. ✅",
+        stress:20,mood:"😴  +20 Stress  (begadang tapi lega)"
+      },
+      RISKY:{
+        lbl:"Submit file kosong sekarang agar terdata masuk sebelum deadline.",
+        cons:"Kamu upload file Word berisi judul dan satu kalimat.\nSubmit. 23:59. Masuk.\n\nBesok pagi kamu email dosen:\n\"Maaf Pak, sepertinya file saya corrupt saat upload...\"\n\nDosen memeriksa log sistem.\n\n\"File yang masuk berukuran 12KB. Literature review\n 8 halaman tidak mungkin sekecil itu.\"\n\nKamu merasakan keringat dingin pagi hari.",
+        result:"Ketahuan submit file kosong. Kena tegur dosen. ❌",
+        stress:35,mood:"😰  +35 Stress  (akal-akalan ketahuan sistem)"
+      },
+      CHAOS:{
+        lbl:"Cari tugas serupa di internet, ubah nama, dan submit sebelum jam 12.",
+        cons:"Di Google Scholar kamu temukan jurnal dengan judul mirip.\nDownload. Ganti nama. Submit. 23:58.\n\nDua hari kemudian:\n\n  Portal Akademik : 🔴 TUGAS DITOLAK\n  \"Similarity Index: 87% — Turnitin Report terlampir.\"\n  Dosen memintamu hadir ke sidang akademik.\n\nKamu menatap notifikasi itu lama sekali.\nLalu menutup laptop. Lalu membukanya lagi.\nLalu menutup lagi.",
+        result:"PLAGIARISME JURNAL ILMIAH! Sidang akademik menanti. ❌",
+        stress:60,mood:"💀  +60 Stress  (GAME OVER LEVEL INTELEKTUAL)"
+      }
+    }
+  },
+  {
+    title:"The Attendance Dilemma  —  Thursday, 7:55 AM",
+    loc:"Gerbang Kampus  ·  Hujan Deras",
+    icon:"🌧️",
+    story:"Hujan turun deras sejak subuh.\nKamu sudah di gerbang kampus, basah setengah badan.\n\nHP bergetar:\n\n  ┌─────────────────────────────────────────┐\n  │  Dosen : 'Kelas hari ini ONLINE karena  │\n  │           rapat pimpinan. Link Zoom      │\n  │           dikirim 5 menit lagi.'        │\n  └─────────────────────────────────────────┘\n\nKamu sudah telanjur di kampus.\nSinyal di area kampus: 1 bar.\nKuota HP: 200MB tersisa.\nZoom butuh minimal 500MB per jam.\n\nTeman sebangku texting:\n  Maya : \"Hei, absen online doang, gak perlu nyalain kamera!\"",
+    q:"❓  Apa yang akan kamu lakukan?",
+    choices:{
+      SAFE:{
+        lbl:"Cari ruangan dengan WiFi kampus dan ikuti Zoom dengan kamera menyala.",
+        cons:"Kamu berlari ke gedung perpustakaan — ada WiFi kencang.\nZoom join. Kamera on. Duduk di sudut perpustakaan yang sepi.\n\nKuliah berjalan 90 menit. Kamu catat semua.\n\nDi chat Zoom, dosen menulis:\n\"Terima kasih yang hadir dengan kamera on — sangat dihargai.\"\n\nKamu merasa sedikit pahlawan kecil hari itu.",
+        result:"Ikut Zoom dengan benar. Dosen apresiasi! ✅",
+        stress:10,mood:"😊  +10 Stress  (basah tapi puas!)"
+      },
+      RISKY:{
+        lbl:"Join Zoom, langsung matikan video dan audio, lalu tidur di kos.",
+        cons:"Join. Nama muncul di daftar peserta. Audio mute. Video off.\nKamu balik ke kos, ganti baju, dan tidur.\n\n45 menit kemudian HP bergetar:\n\n  Dosen : \"Untuk peserta yang tidak aktif —\n           tolong nyalakan kamera 30 detik\n           sebagai konfirmasi kehadiran.\"\n\nKamu terbangun terlambat 10 menit.\nNama kamu sudah ditandai: TIDAK HADIR.",
+        result:"Tidur saat kuliah online — absen tidak masuk. ❌",
+        stress:30,mood:"😓  +30 Stress  (tidur mahal harganya)"
+      },
+      CHAOS:{
+        lbl:"Minta Maya absenkan namamu di Zoom dan kamu pulang ke kos.",
+        cons:"Kamu texting Maya: 'Join pake namaku ya, aku gak ada kuota.'\n\nMaya masuk dengan dua akun: akun dia dan akunmu.\nDosen melihat satu HP yang berganti-ganti nama.\n\nDosen berhenti presentasi:\n\"Ada yang bisa menjelaskan mengapa nama yang sama\n muncul dari dua device berbeda dalam waktu bersamaan?\"\n\nMaya panik. Kamu panik jarak jauh dari kos.\nKalian berdua mendapat surat peringatan.",
+        result:"Ketahuan titip absen. Surat peringatan untuk berdua. ❌",
+        stress:45,mood:"😱  +45 Stress  (satu tipu muslihat, dua korban)"
+      }
+    }
+  },
+  {
+    title:"The Scholarship Application  —  Friday, 3:00 PM",
+    loc:"Kantor Kemahasiswaan  ·  Antrian Beasiswa",
+    icon:"🏅",
+    story:"Beasiswa prestasi akademik — Rp 4.000.000 per semester.\nSyarat utama: IPK minimal 3.50\n\nIPK kamu saat ini: 3.48\n\nKamu sudah mengantri 2 jam.\nTinggal 3 orang lagi di depanmu.\n\nTemanmu Hendra berbisik:\n  Hendra : \"Eh, tadi aku lihat formulirnya. Kolom IPK\n             diisi manual. Ga ada yang cross-check ke sistem.\"\n\nPetugas memanggil nomor antrian berikutnya.\nItu nomor kamu.",
+    q:"❓  Apa yang akan kamu lakukan?",
+    choices:{
+      SAFE:{
+        lbl:"Isi IPK dengan jujur: 3.48, dan tanyakan program alternatif.",
+        cons:"Kamu duduk di depan petugas. Tulis 3.48.\n\n\"Maaf, IPK saya 3.48. Apakah ada program beasiswa lain\n yang tidak mensyaratkan IPK 3.50?\"\n\nPetugas mengeluarkan brosur lain:\n\"Ada beasiswa minat dan bakat. Tidak ada syarat IPK minimum.\"\n\nKamu pulang tanpa beasiswa prestasi,\ntapi dengan informasi berharga dan nurani yang bersih.",
+        result:"Jujur soal IPK. Dapat info beasiswa alternatif! ✅",
+        stress:8,mood:"😌  +8 Stress  (sedikit kecewa, tapi lega)"
+      },
+      RISKY:{
+        lbl:"Tulis 3.50 persis — selisihnya 0.02, bukan hal besar.",
+        cons:"Kamu menulis 3.50. Formulir dikumpul.\n\nSeminggu kemudian, email masuk:\n\"Selamat! Anda lolos seleksi administrasi beasiswa.\"\n\nTapi tahap selanjutnya: verifikasi dokumen langsung ke sistem akademik.\n\nSistem menampilkan IPK asli: 3.48\n\nPanitia menghubungi:\n\"Ada ketidaksesuaian data. Aplikasi Anda dibatalkan\n dan nama Anda masuk daftar blacklist beasiswa 2 tahun.\"",
+        result:"Kebohongan 0.02 → blacklist beasiswa 2 tahun. ❌",
+        stress:45,mood:"😱  +45 Stress  (0.02 yang menghancurkan segalanya)"
+      },
+      CHAOS:{
+        lbl:"Tulis 3.75 — selagi bohong, bohong yang menguntungkan sekalian.",
+        cons:"Kamu menulis 3.75 dengan mantap.\n\nFormulir dikumpul. Dua minggu berlalu.\n\nTelepon masuk dari nomor tidak dikenal:\n\"Halo, ini dari Tim Verifikasi Beasiswa Rektorat.\n Kami ingin konfirmasi IPK Anda yang tercatat 3.75\n karena tidak sesuai dengan database sistem.\"\n\nKamu terdiam 8 detik penuh.\n\n\"Halo? Masih di sana?\"",
+        result:"Rektorat menelepon soal IPK palsu 3.75. ❌",
+        stress:60,mood:"💀  +60 Stress  (REKTORAT MENELEPON. REKTORAT.)"
+      }
+    }
+  },
+  {
+    title:"The Final Exam Eve  —  Sunday, 10:00 PM",
+    loc:"Kamar Kos  ·  Malam Sebelum UAS",
+    icon:"📖",
+    story:"Besok: UJIAN AKHIR SEMESTER.\nMata kuliah: Introduction to Literature  (bobot 4 SKS)\n\nYang perlu dipelajari:\n  → 14 minggu materi kuliah\n  → 3 novel utama\n  → 47 halaman handout\n  → 12 istilah kritis sastra\n\nYang sudah kamu pelajari sejauh ini:\n  → Nama dosennya\n\nDi meja ada:\n  ☕  Kopi sachet  x 4\n  📱  HP (Netflix baru rilis season baru)\n  📚  Buku teks yang masih terbungkus plastik\n\nJam 22:00. Ujian jam 08:00 pagi.",
+    q:"❓  Apa yang akan kamu lakukan?",
+    choices:{
+      SAFE:{
+        lbl:"Buka buku, buat rangkuman cepat, belajar sampai pagi jika perlu.",
+        cons:"Kamu merobek plastik buku dengan tekad baru.\n\nKopi pertama: chapter 1-3\nKopi kedua: novel pertama\nKopi ketiga: istilah kritis\nKopi keempat: review ulang semua\n\nJam 05:00 pagi. Kamu mandi. Sarapan. Berangkat.\n\nDi ruang ujian, kamu tidak hafal semua —\ntapi kamu tahu cukup untuk menjawab dengan layak.\n\nPerkiraan nilai: B+",
+        result:"SKS (Sistem Kebut Semalaman) berhasil! B+ ✅",
+        stress:25,mood:"😤  +25 Stress  (lelah, tapi bisa jawab!)"
+      },
+      RISKY:{
+        lbl:"Cari bocoran soal dari kakak tingkat lewat grup WA angkatan.",
+        cons:"Kamu tanya di grup: 'Ada yang tau kira-kira soal UAS gimana?'\n\nKakak tingkat mengirimkan 'prediksi soal' — 20 pertanyaan.\nKamu hafal semua itu sampai jam 1 pagi.\n\nUjian dimulai. Soal keluar.\n\nTidak ada SATU PUN yang cocok dengan prediksi.\n\nDosen rupanya mengganti soal setiap tahun.\nKamu mengerjakan dengan pengetahuan nol dan hafalan yang\nsama sekali tidak relevan.",
+        result:"Bocoran salah semua. Ujian dikerjakan nyaris buta. ❌",
+        stress:40,mood:"😵  +40 Stress  (percaya bocoran = bunuh diri akademik)"
+      },
+      CHAOS:{
+        lbl:"Nonton Netflix dulu 'biar tenang', lanjut belajar nanti.",
+        cons:"Satu episode saja. Biar pikiran fresh dulu.\n\nEpisode 1: selesai.\nEpisode 2: 'tanggung'.\nEpisode 3: 'bentar lagi ada plot twist'.\n\nJam 03:00 pagi. Mata berat. Kamu ketiduran.\n\nAlarm tidak berbunyi.\nKamu terbangun jam 08:47.\nUjian dimulai jam 08:00.\n\nKamu berlari ke kampus dengan baju tidur.\nPintu ruang ujian sudah ditutup.",
+        result:"Ketiduran. Terlambat. Pintu ujian sudah tutup. ❌",
+        stress:65,mood:"💀  +65 Stress  (NETFLIX MEMBUNUHMU SECARA AKADEMIK)"
+      }
+    }
+  }
+];
+
+// ═══════════════════════════════════════════════════
+//  GAME STATE
+// ═══════════════════════════════════════════════════
+let username      = "";
+let stress        = 0;
+let scenIdx       = 0;
+let sessionOrder  = [];
+let sessionLog    = [];
+let shuffledKeys  = {};
+let typingTimeout = null;
+let typingText    = "";
+let typingEl      = null;
+let typingIdx     = 0;
+let typingDone    = null;
+const TOTAL       = 10;
+
+// ═══════════════════════════════════════════════════
+//  SCREEN SWITCHING
+// ═══════════════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(id);
+  el.classList.add('active');
+  el.scrollTop = 0;
+}
+
+function showLogin() {
+  showScreen('screen-login');
+  setTimeout(()=> document.getElementById('username-input').focus(), 100);
+}
+
+function showTitle() {
+  stress      = 0;
+  scenIdx     = 0;
+  sessionLog  = [];
+  shuffledKeys= {};
+  let arr = Array.from({length:ALL_SCENARIOS.length},(_,i)=>i);
+  shuffle(arr);
+  sessionOrder = arr.slice(0, TOTAL);
+  document.getElementById('welcome-name').textContent = `Selamat datang, 👤 ${username} !`;
+  showScreen('screen-title');
+}
+
+// ═══════════════════════════════════════════════════
+//  LOGIN
+// ═══════════════════════════════════════════════════
+function doLogin() {
+  const val = document.getElementById('username-input').value.trim();
+  const err = document.getElementById('login-err');
+  if (!val)          { err.textContent = "⚠️  Nama tidak boleh kosong."; return; }
+  if (val.length<2)  { err.textContent = "⚠️  Nama terlalu pendek. Minimal 2 karakter."; return; }
+  if (val.length>24) { err.textContent = "⚠️  Nama terlalu panjang. Maksimal 24 karakter."; return; }
+  err.textContent = "";
+  username = val;
+  showTitle();
+}
+
+document.getElementById('username-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+// ═══════════════════════════════════════════════════
+//  GAME START
+// ═══════════════════════════════════════════════════
+function startGame() { showScenario(0); }
+
+// ═══════════════════════════════════════════════════
+//  SCENARIO
+// ═══════════════════════════════════════════════════
+function getShuffledKeys(si) {
+  if (!shuffledKeys[si]) {
+    const scen = ALL_SCENARIOS[sessionOrder[si]];
+    const keys = Object.keys(scen.choices);
+    shuffle(keys);
+    shuffledKeys[si] = keys;
+  }
+  return shuffledKeys[si];
+}
+
+function showScenario(si) {
+  stopTyping();
+  scenIdx = si;
+  const scen = ALL_SCENARIOS[sessionOrder[si]];
+  showScreen('screen-scenario');
+
+  document.getElementById('hdr-user').textContent = username ? `👤 ${username}` : "";
+  updateStressBar();
+  buildProgressDots(si);
+
+  document.getElementById('scen-title').textContent = `${scen.icon}  ${scen.title}`;
+  document.getElementById('scen-loc').textContent   = scen.loc;
+
+  const wrap    = document.getElementById('story-wrap');
+  const storyBox = document.getElementById('story-box');
+  storyBox.innerHTML = `<div class="story-text" id="story-text"></div>`;
+  document.getElementById('skip-hint').style.display = 'block';
+
+  const bottom = document.getElementById('bottom-area');
+  bottom.innerHTML = '';
+
+  // Build choices
+  const qDiv = document.createElement('div');
+  qDiv.className = 'q-label';
+  qDiv.textContent = scen.q;
+
+  const cWrap = document.createElement('div');
+  cWrap.className = 'choices-wrap';
+
+  const keys    = getShuffledKeys(si);
+  const letters = ['A','B','C'];
+
+  keys.forEach((k, i) => {
+    const ch  = scen.choices[k];
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn fadein';
+    btn.style.animationDelay = (i * 0.07) + 's';
+    btn.innerHTML = `
+      <div class="choice-badge ${letters[i]}">PILIHAN ${letters[i]}</div>
+      <div class="choice-text">${escHtml(ch.lbl)}</div>
+    `;
+    btn.addEventListener('click', () => pick(k, si));
+    cWrap.appendChild(btn);
+  });
+
+  bottom.appendChild(qDiv);
+  bottom.appendChild(cWrap);
+
+  wrap.scrollTop = 0;
+
+  // Start typing animation for story
+  typeText(document.getElementById('story-text'), scen.story, 10, null);
+}
+
+function pick(key, si) {
+  stopTyping();
+  const scen = ALL_SCENARIOS[sessionOrder[si]];
+  const ch   = scen.choices[key];
+  const keys = getShuffledKeys(si);
+  const letter = ['A','B','C'][keys.indexOf(key)];
+
+  stress += ch.stress;
+  sessionLog.push({ num:si+1, title:scen.title.split(' — ')[0], key, add:ch.stress, result:ch.result });
+  updateStressBar();
+
+  const storyBox = document.getElementById('story-box');
+  storyBox.innerHTML = `<div class="consequence-box">
+    <div class="consequence-choice">Kamu memilih : [ ${letter} ]</div>
+    <div class="consequence-div"></div>
+    <div class="story-text" id="story-text"></div>
+    <div class="consequence-div" id="res-div" style="display:none"></div>
+    <div class="consequence-result" id="res-result" style="display:none"></div>
+  </div>`;
+
+  document.getElementById('skip-hint').style.display = 'block';
+  document.getElementById('bottom-area').innerHTML = '';
+
+  const consText = ch.cons + `\n\n──────────────────────────────────────────────────\n📊  Hasil    : ${ch.result}\n      ${ch.mood}`;
+
+  typeText(document.getElementById('story-text'), consText, 9, () => {
+    document.getElementById('skip-hint').style.display = 'none';
+    showNav(si);
+  });
+}
+
+function showNav(si) {
+  const bottom = document.getElementById('bottom-area');
+  bottom.innerHTML = '';
+  const wrap = document.createElement('div');
+  wrap.className = 'nav-wrap fadein';
+
+  if (stress >= 200) {
+    const btn = document.createElement('button');
+    btn.className = 'nav-btn red';
+    btn.textContent = '💀  GAME OVER — Lihat Hasil';
+    btn.onclick = showGameOver;
+    wrap.appendChild(btn);
+  } else if (si < TOTAL - 1) {
+    const btn = document.createElement('button');
+    btn.className = 'nav-btn green';
+    btn.textContent = `▶  Skenario Berikutnya  (${si+2}/${TOTAL})`;
+    btn.onclick = () => showScenario(si + 1);
+    wrap.appendChild(btn);
+  } else {
+    const btn = document.createElement('button');
+    btn.className = 'nav-btn green';
+    btn.textContent = '🏁  Lihat Hasil Akhir';
+    btn.onclick = showEnding;
+    wrap.appendChild(btn);
+  }
+  bottom.appendChild(wrap);
+}
+
+// ═══════════════════════════════════════════════════
+//  GAME OVER
+// ═══════════════════════════════════════════════════
+function showGameOver() {
+  document.getElementById('go-sub').textContent = username
+    ? `👤  ${username}  —  STRES KAMU MELAMPAUI BATAS MANUSIA`
+    : 'STRES KAMU MELAMPAUI BATAS MANUSIA';
+  document.getElementById('go-stress').textContent = `Stress Akhir : ${stress} / 200  ☠️`;
+
+  const rows = document.getElementById('go-log-rows');
+  rows.innerHTML = '';
+  const keyCol = {SAFE:'var(--green)', RISKY:'var(--yellow)', CHAOS:'var(--red)'};
+  const keyLbl = {SAFE:'AMAN', RISKY:'BERISIKO', CHAOS:'KACAU'};
+
+  sessionLog.forEach(e => {
+    const r = document.createElement('div');
+    r.className = 'log-row';
+    r.innerHTML = `<span class="log-badge" style="background:${keyCol[e.key]||'var(--gray)'};color:#0a0914;">${keyLbl[e.key]||e.key}</span>
+      <span class="log-add" style="color:${keyCol[e.key]||'var(--gray)'}">+${e.add}</span>
+      <span class="log-name">#${e.num} ${e.title}</span>`;
+    rows.appendChild(r);
+  });
+  showScreen('screen-gameover');
+}
+
+// ═══════════════════════════════════════════════════
+//  ENDING
+// ═══════════════════════════════════════════════════
+function showEnding() {
+  const s = stress;
+  let title, sub, col, txt, ach, evl;
+
+  if (s <= 100) {
+    title = "🏆  THE HONORABLE FRESHMAN"; sub = "ENDING TERBAIK"; col = "var(--green)";
+    txt   = "LUAR BIASA! Kamu melewati 10 skenario kampus dengan gemilang.\n\nSetiap dosen sudah mengenalmu sebagai 'yang serius'.\nTeman-teman mengajakmu belajar bersama.\nYang terpenting — kamu melakukan segalanya dengan integritas penuh.\n\n\"Excellence is not an act, but a habit.\"  — Aristotle";
+    ach   = "✨  Achievement Unlocked :  CAMPUS LEGEND  ✨";
+    evl   = "Setiap pilihan mencerminkan integritas dan kerja keras.\nKamu membuktikan: kejujuran selalu terbayar.";
+  } else if (s <= 150) {
+    title = "🎓  THE RESILIENT SURVIVOR"; sub = "ENDING SURVIVAL"; col = "var(--green)";
+    txt   = "Kamu berhasil! Tidak sempurna — tapi masih berdiri tegak.\n\nAda momen-momen memalukan. Beberapa penyesalan.\nTapi itulah pendidikan terbaik yang tidak bisa dibeli:\npelajaran yang dipetik dari pengalaman nyata.\n\n\"Tidak masalah seberapa lambat kamu melangkah,\n selama kamu tidak berhenti.\"  — Confucius";
+    ach   = "🎯  Achievement Unlocked :  RESILIENT SURVIVOR  🎯";
+    evl   = "Beberapa pilihan baik, beberapa bisa diperbaiki.\nKamu belajar dari semuanya — itulah inti dari segalanya.";
+  } else if (s <= 180) {
+    title = "😮  NYARIS SELAMAT"; sub = "ENDING HAMPIR CELAKA"; col = "var(--yellow)";
+    txt   = "Kamu selamat... dalam kondisi yang cukup mengkhawatirkan.\n\nMata bengkak, tangan gemetar, dan kopi dingin\nadalah satu-satunya temanmu selama 10 skenario ini.\n\nKonselor mahasiswa menghubungimu:\n\"Ada beberapa hal yang perlu kita evaluasi bersama.\"";
+    ach   = "😵  Achievement Unlocked :  WALKING ON THE EDGE  😵";
+    evl   = "Banyak pilihan berisiko dibuat.\nPertimbangkan ulang strategimu sebelum semester depan!";
+  } else {
+    title = "⚠️   HAMPIR CELAKA"; sub = "SATU LANGKAH DARI KEHANCURAN"; col = "var(--orange)";
+    txt   = "Kamu berhasil — hanya selisih satu keputusan dari Game Over.\n\nDi bus pulang kamu tertidur dan kelewatan halte.\nTapi kamu masih di sini. Masih bisa mencoba lagi.\n\nSemester satu masih panjang.\nMasih banyak kesempatan untuk berbuat lebih baik.";
+    ach   = "🚨  Achievement Unlocked :  SURVIVED BY A THREAD  🚨";
+    evl   = "Hampir setiap keputusan membawa konsekuensi berat.\nMulailah kembali dengan pola pikir yang jauh lebih baik.";
+  }
+
+  document.getElementById('end-topbar').style.background = col;
+  document.getElementById('end-username').textContent = username ? `👤  Laporan untuk :  ${username}` : '';
+  document.getElementById('end-title').textContent   = title;
+  document.getElementById('end-title').style.color   = col;
+  document.getElementById('end-sub').textContent     = sub;
+  document.getElementById('end-div').style.background= col;
+  document.getElementById('end-txt').textContent     = txt;
+  document.getElementById('end-ach').textContent     = ach;
+  document.getElementById('end-ach').style.color     = col;
+  document.getElementById('end-stats').textContent   = `Stress Akhir : ${s} / 200  |  Skenario : ${sessionLog.length}/10`;
+  document.getElementById('end-stats').style.color   = col;
+
+  const keyCol = {SAFE:'var(--green)', RISKY:'var(--yellow)', CHAOS:'var(--red)'};
+  const keyLbl = {SAFE:'AMAN', RISKY:'BERISIKO', CHAOS:'KACAU'};
+  const logRows = document.getElementById('end-log-rows');
+  logRows.innerHTML = '';
+
+  sessionLog.forEach(e => {
+    const r = document.createElement('div');
+    r.className = 'log-row';
+    r.innerHTML = `<span class="log-badge" style="background:${keyCol[e.key]||'var(--gray)'};color:#0a0914;">${keyLbl[e.key]||e.key}</span>
+      <span class="log-add" style="color:${keyCol[e.key]||'var(--gray)'}">+${e.add}</span>
+      <span class="log-name">#${String(e.num).padStart(2,'0')} ${e.title}</span>`;
+    logRows.appendChild(r);
+  });
+
+  const safe  = sessionLog.filter(e=>e.key==='SAFE').length;
+  const risky = sessionLog.filter(e=>e.key==='RISKY').length;
+  const chaos = sessionLog.filter(e=>e.key==='CHAOS').length;
+
+  document.getElementById('end-sum').innerHTML = `
+    <span class="sum-item" style="color:var(--green)">✅ AMAN x${safe}</span>
+    <span class="sum-item" style="color:var(--yellow)">⚠️ BERISIKO x${risky}</span>
+    <span class="sum-item" style="color:var(--red)">💀 KACAU x${chaos}</span>
+  `;
+  document.getElementById('end-eval').textContent = evl;
+
+  showScreen('screen-ending');
+}
+
+// ═══════════════════════════════════════════════════
+//  STRESS BAR
+// ═══════════════════════════════════════════════════
+function stressColor() {
+  if (stress < 80)  return 'var(--green)';
+  if (stress < 140) return 'var(--yellow)';
+  if (stress < 180) return 'var(--orange)';
+  return 'var(--red)';
+}
+function stressLabel() {
+  if (stress < 80)  return '😊 AMAN';
+  if (stress < 140) return '😰 WASPADA';
+  if (stress < 180) return '😱 KRITIS';
+  return '☠️ BAHAYA!';
+}
+function updateStressBar() {
+  const c = stressColor();
+  const pct = Math.min(stress, 200) / 200 * 100;
+  document.getElementById('stress-fill').style.width      = pct + '%';
+  document.getElementById('stress-fill').style.background = c;
+  document.getElementById('stress-val').textContent       = `${stress}/200`;
+  document.getElementById('stress-val').style.color       = c;
+  document.getElementById('stress-state').textContent     = stressLabel();
+  document.getElementById('stress-state').style.color     = c;
+}
+
+// ═══════════════════════════════════════════════════
+//  PROGRESS DOTS
+// ═══════════════════════════════════════════════════
+function buildProgressDots(cur) {
+  const el = document.getElementById('progress-dots');
+  el.innerHTML = '';
+  for (let i = 0; i < TOTAL; i++) {
+    const span = document.createElement('span');
+    if (i < cur)       { span.textContent = '●'; span.className = 'dot-done'; }
+    else if (i === cur){ span.textContent = '◉'; span.className = 'dot-cur'; }
+    else               { span.textContent = '○'; span.className = 'dot-todo'; }
+    el.appendChild(span);
+  }
+  const count = document.createElement('span');
+  count.className = 'dot-count';
+  count.textContent = `${cur+1}/${TOTAL}`;
+  el.appendChild(count);
+}
+
+// ═══════════════════════════════════════════════════
+//  TYPING ANIMATION
+// ═══════════════════════════════════════════════════
+function typeText(el, text, spd, onDone) {
+  stopTyping();
+  el.textContent = '';
+  typingEl  = el;
+  typingText= text;
+  typingIdx = 0;
+  typingDone= onDone;
+
+  function tick() {
+    if (typingIdx < typingText.length) {
+      el.textContent += typingText[typingIdx++];
+      el.parentElement && el.parentElement.scrollIntoView({block:'end', behavior:'smooth'});
+      typingTimeout = setTimeout(tick, spd);
+    } else {
+      typingTimeout = null;
+      typingEl = null;
+      if (typingDone) { const cb=typingDone; typingDone=null; cb(); }
+    }
+  }
+  tick();
+}
+
+function stopTyping() {
+  if (typingTimeout) { clearTimeout(typingTimeout); typingTimeout = null; }
+}
+
+function skipAnim() {
+  if (typingEl && typingIdx < typingText.length) {
+    stopTyping();
+    typingEl.textContent = typingText;
+    typingIdx = typingText.length;
+    const cb = typingDone;
+    typingEl = null; typingDone = null;
+    if (cb) cb();
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════════════════
+function shuffle(arr) {
+  for (let i = arr.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>
